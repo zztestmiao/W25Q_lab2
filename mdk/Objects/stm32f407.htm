@@ -3,11 +3,11 @@
 <title>Static Call Graph - [.\Objects\stm32f407.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\stm32f407.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Tue Nov 10 21:41:06 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Tue Nov 10 21:46:11 2026
 <BR><P>
 <H3>Maximum Stack Usage =        116 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
-__rt_entry_main &rArr; main &rArr; app_flash_read_test &rArr; w25q_read_data &rArr; w25q_init &rArr; GPIO_PinAFConfig
+__rt_entry_main &rArr; main &rArr; flash_test_read_data &rArr; w25q_read_data &rArr; w25q_init &rArr; GPIO_PinAFConfig
 <P>
 <H3>
 Functions with no stack information
@@ -247,7 +247,7 @@ Global Symbols
 
 <P><STRONG><a name="[6b]"></a>__rt_entry_main</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __rtentry2.o(.ARM.Collect$$rtentry$$0000000D))
 <BR><BR>[Stack]<UL><LI>Max Depth = 116 + Unknown Stack Size
-<LI>Call Chain = __rt_entry_main &rArr; main &rArr; app_flash_read_test &rArr; w25q_read_data &rArr; w25q_init &rArr; GPIO_PinAFConfig
+<LI>Call Chain = __rt_entry_main &rArr; main &rArr; flash_test_read_data &rArr; w25q_read_data &rArr; w25q_init &rArr; GPIO_PinAFConfig
 </UL>
 <BR>[Calls]<UL><LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 <LI><a href="#[6d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;exit
@@ -630,8 +630,8 @@ Global Symbols
 <P><STRONG><a name="[94]"></a>GPIO_Init</STRONG> (Thumb, 144 bytes, Stack size 20 bytes, stm32f4xx_gpio.o(i.GPIO_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 20<LI>Call Chain = GPIO_Init
 </UL>
-<BR>[Called By]<UL><LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
-<LI><a href="#[87]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;led_init
+<BR>[Called By]<UL><LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
+<LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;led_init
 </UL>
 
 <P><STRONG><a name="[cc]"></a>__semihosting_library_function</STRONG> (Thumb, 0 bytes, Stack size 20 bytes, indicate_semi.o(.text), UNUSED)
@@ -639,27 +639,27 @@ Global Symbols
 <P><STRONG><a name="[98]"></a>GPIO_PinAFConfig</STRONG> (Thumb, 70 bytes, Stack size 20 bytes, stm32f4xx_gpio.o(i.GPIO_PinAFConfig))
 <BR><BR>[Stack]<UL><LI>Max Depth = 20<LI>Call Chain = GPIO_PinAFConfig
 </UL>
-<BR>[Called By]<UL><LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
+<BR>[Called By]<UL><LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
 </UL>
 
 <P><STRONG><a name="[9c]"></a>GPIO_ResetBits</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, stm32f4xx_gpio.o(i.GPIO_ResetBits))
 <BR><BR>[Called By]<UL><LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_send_write_control
-<LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_status1
-<LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_jedec_id
-<LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_data
+<LI><a href="#[8f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_status1
+<LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_jedec_id
+<LI><a href="#[8d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_data
 </UL>
 
 <P><STRONG><a name="[97]"></a>GPIO_SetBits</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, stm32f4xx_gpio.o(i.GPIO_SetBits))
 <BR><BR>[Called By]<UL><LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_send_write_control
-<LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_status1
-<LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_jedec_id
-<LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_data
-<LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
+<LI><a href="#[8f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_status1
+<LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_jedec_id
+<LI><a href="#[8d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_data
+<LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
 </UL>
 
 <P><STRONG><a name="[93]"></a>GPIO_StructInit</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, stm32f4xx_gpio.o(i.GPIO_StructInit))
-<BR><BR>[Called By]<UL><LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
-<LI><a href="#[87]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;led_init
+<BR><BR>[Called By]<UL><LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
+<LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;led_init
 </UL>
 
 <P><STRONG><a name="[7b]"></a>GPIO_ToggleBits</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, stm32f4xx_gpio.o(i.GPIO_ToggleBits))
@@ -667,22 +667,22 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[95]"></a>GPIO_WriteBit</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, stm32f4xx_gpio.o(i.GPIO_WriteBit))
-<BR><BR>[Called By]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;led_off
+<BR><BR>[Called By]<UL><LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;led_off
 </UL>
 
-<P><STRONG><a name="[8f]"></a>NVIC_Init</STRONG> (Thumb, 106 bytes, Stack size 16 bytes, misc.o(i.NVIC_Init))
+<P><STRONG><a name="[86]"></a>NVIC_Init</STRONG> (Thumb, 106 bytes, Stack size 16 bytes, misc.o(i.NVIC_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = NVIC_Init
 </UL>
-<BR>[Called By]<UL><LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_timer_init
+<BR>[Called By]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_timer_init
 </UL>
 
-<P><STRONG><a name="[92]"></a>RCC_AHB1PeriphClockCmd</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, stm32f4xx_rcc.o(i.RCC_AHB1PeriphClockCmd))
-<BR><BR>[Called By]<UL><LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
-<LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;board_lowlevel_init
+<P><STRONG><a name="[89]"></a>RCC_AHB1PeriphClockCmd</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, stm32f4xx_rcc.o(i.RCC_AHB1PeriphClockCmd))
+<BR><BR>[Called By]<UL><LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
+<LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;board_lowlevel_init
 </UL>
 
-<P><STRONG><a name="[8c]"></a>RCC_APB1PeriphClockCmd</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, stm32f4xx_rcc.o(i.RCC_APB1PeriphClockCmd))
-<BR><BR>[Called By]<UL><LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_timer_init
+<P><STRONG><a name="[83]"></a>RCC_APB1PeriphClockCmd</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, stm32f4xx_rcc.o(i.RCC_APB1PeriphClockCmd))
+<BR><BR>[Called By]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_timer_init
 </UL>
 
 <P><STRONG><a name="[77]"></a>RCC_APB1PeriphResetCmd</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, stm32f4xx_rcc.o(i.RCC_APB1PeriphResetCmd))
@@ -690,30 +690,30 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[96]"></a>RCC_APB2PeriphClockCmd</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, stm32f4xx_rcc.o(i.RCC_APB2PeriphClockCmd))
-<BR><BR>[Called By]<UL><LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
+<BR><BR>[Called By]<UL><LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
 </UL>
 
 <P><STRONG><a name="[76]"></a>RCC_APB2PeriphResetCmd</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, stm32f4xx_rcc.o(i.RCC_APB2PeriphResetCmd))
 <BR><BR>[Called By]<UL><LI><a href="#[75]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPI_I2S_DeInit
 </UL>
 
-<P><STRONG><a name="[8b]"></a>RCC_GetClocksFreq</STRONG> (Thumb, 214 bytes, Stack size 20 bytes, stm32f4xx_rcc.o(i.RCC_GetClocksFreq))
+<P><STRONG><a name="[82]"></a>RCC_GetClocksFreq</STRONG> (Thumb, 214 bytes, Stack size 20 bytes, stm32f4xx_rcc.o(i.RCC_GetClocksFreq))
 <BR><BR>[Stack]<UL><LI>Max Depth = 20<LI>Call Chain = RCC_GetClocksFreq
 </UL>
-<BR>[Called By]<UL><LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_timer_init
+<BR>[Called By]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_timer_init
 </UL>
 
 <P><STRONG><a name="[9b]"></a>SPI_Cmd</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, stm32f4xx_spi.o(i.SPI_Cmd))
-<BR><BR>[Called By]<UL><LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
+<BR><BR>[Called By]<UL><LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
 </UL>
 
 <P><STRONG><a name="[75]"></a>SPI_I2S_DeInit</STRONG> (Thumb, 152 bytes, Stack size 8 bytes, stm32f4xx_spi.o(i.SPI_I2S_DeInit))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = SPI_I2S_DeInit
 </UL>
-<BR>[Calls]<UL><LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_APB2PeriphResetCmd
-<LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_APB1PeriphResetCmd
+<BR>[Calls]<UL><LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_APB1PeriphResetCmd
+<LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_APB2PeriphResetCmd
 </UL>
-<BR>[Called By]<UL><LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
+<BR>[Called By]<UL><LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
 </UL>
 
 <P><STRONG><a name="[9f]"></a>SPI_I2S_GetFlagStatus</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, stm32f4xx_spi.o(i.SPI_I2S_GetFlagStatus))
@@ -731,11 +731,11 @@ Global Symbols
 <P><STRONG><a name="[9a]"></a>SPI_Init</STRONG> (Thumb, 60 bytes, Stack size 8 bytes, stm32f4xx_spi.o(i.SPI_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = SPI_Init
 </UL>
-<BR>[Called By]<UL><LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
+<BR>[Called By]<UL><LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
 </UL>
 
 <P><STRONG><a name="[99]"></a>SPI_StructInit</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, stm32f4xx_spi.o(i.SPI_StructInit))
-<BR><BR>[Called By]<UL><LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
+<BR><BR>[Called By]<UL><LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
 </UL>
 
 <P><STRONG><a name="[5e]"></a>SystemInit</STRONG> (Thumb, 86 bytes, Stack size 8 bytes, system_stm32f4xx.o(i.SystemInit))
@@ -756,11 +756,11 @@ Global Symbols
 </UL>
 <P><STRONG><a name="[7a]"></a>TIM_ClearITPendingBit</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, stm32f4xx_tim.o(i.TIM_ClearITPendingBit))
 <BR><BR>[Called By]<UL><LI><a href="#[42]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM6_DAC_IRQHandler
-<LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_timer_init
+<LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_timer_init
 </UL>
 
-<P><STRONG><a name="[91]"></a>TIM_Cmd</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, stm32f4xx_tim.o(i.TIM_Cmd))
-<BR><BR>[Called By]<UL><LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_timer_init
+<P><STRONG><a name="[88]"></a>TIM_Cmd</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, stm32f4xx_tim.o(i.TIM_Cmd))
+<BR><BR>[Called By]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_timer_init
 </UL>
 
 <P><STRONG><a name="[79]"></a>TIM_GetITStatus</STRONG> (Thumb, 34 bytes, Stack size 12 bytes, stm32f4xx_tim.o(i.TIM_GetITStatus))
@@ -769,57 +769,91 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[42]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM6_DAC_IRQHandler
 </UL>
 
-<P><STRONG><a name="[90]"></a>TIM_ITConfig</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, stm32f4xx_tim.o(i.TIM_ITConfig))
-<BR><BR>[Called By]<UL><LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_timer_init
+<P><STRONG><a name="[87]"></a>TIM_ITConfig</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, stm32f4xx_tim.o(i.TIM_ITConfig))
+<BR><BR>[Called By]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_timer_init
 </UL>
 
-<P><STRONG><a name="[8e]"></a>TIM_TimeBaseInit</STRONG> (Thumb, 104 bytes, Stack size 0 bytes, stm32f4xx_tim.o(i.TIM_TimeBaseInit))
-<BR><BR>[Called By]<UL><LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_timer_init
+<P><STRONG><a name="[85]"></a>TIM_TimeBaseInit</STRONG> (Thumb, 104 bytes, Stack size 0 bytes, stm32f4xx_tim.o(i.TIM_TimeBaseInit))
+<BR><BR>[Called By]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_timer_init
 </UL>
 
-<P><STRONG><a name="[8d]"></a>TIM_TimeBaseStructInit</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, stm32f4xx_tim.o(i.TIM_TimeBaseStructInit))
-<BR><BR>[Called By]<UL><LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_timer_init
+<P><STRONG><a name="[84]"></a>TIM_TimeBaseStructInit</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, stm32f4xx_tim.o(i.TIM_TimeBaseStructInit))
+<BR><BR>[Called By]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_timer_init
 </UL>
 
-<P><STRONG><a name="[86]"></a>board_lowlevel_init</STRONG> (Thumb, 20 bytes, Stack size 8 bytes, board.o(i.board_lowlevel_init))
+<P><STRONG><a name="[7d]"></a>board_lowlevel_init</STRONG> (Thumb, 20 bytes, Stack size 8 bytes, board.o(i.board_lowlevel_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = board_lowlevel_init
 </UL>
-<BR>[Calls]<UL><LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_AHB1PeriphClockCmd
+<BR>[Calls]<UL><LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_AHB1PeriphClockCmd
 </UL>
-<BR>[Called By]<UL><LI><a href="#[85]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_hardware_init
+<BR>[Called By]<UL><LI><a href="#[7c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_hardware_init
 </UL>
 
-<P><STRONG><a name="[87]"></a>led_init</STRONG> (Thumb, 42 bytes, Stack size 16 bytes, led.o(i.led_init))
+<P><STRONG><a name="[8a]"></a>flash_test_identify</STRONG> (Thumb, 60 bytes, Stack size 16 bytes, flash_test.o(i.flash_test_identify))
+<BR><BR>[Stack]<UL><LI>Max Depth = 100<LI>Call Chain = flash_test_identify &rArr; w25q_read_jedec_id &rArr; w25q_init &rArr; GPIO_PinAFConfig
+</UL>
+<BR>[Calls]<UL><LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_jedec_id
+</UL>
+<BR>[Called By]<UL><LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
+</UL>
+
+<P><STRONG><a name="[8c]"></a>flash_test_read_data</STRONG> (Thumb, 170 bytes, Stack size 24 bytes, flash_test.o(i.flash_test_read_data))
+<BR><BR>[Stack]<UL><LI>Max Depth = 116<LI>Call Chain = flash_test_read_data &rArr; w25q_read_data &rArr; w25q_init &rArr; GPIO_PinAFConfig
+</UL>
+<BR>[Calls]<UL><LI><a href="#[8d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_data
+</UL>
+<BR>[Called By]<UL><LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
+</UL>
+
+<P><STRONG><a name="[8e]"></a>flash_test_read_status</STRONG> (Thumb, 124 bytes, Stack size 16 bytes, flash_test.o(i.flash_test_read_status))
+<BR><BR>[Stack]<UL><LI>Max Depth = 100<LI>Call Chain = flash_test_read_status &rArr; w25q_read_status1 &rArr; w25q_init &rArr; GPIO_PinAFConfig
+</UL>
+<BR>[Calls]<UL><LI><a href="#[8f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_status1
+</UL>
+<BR>[Called By]<UL><LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
+</UL>
+
+<P><STRONG><a name="[90]"></a>flash_test_wel</STRONG> (Thumb, 188 bytes, Stack size 16 bytes, flash_test.o(i.flash_test_wel))
+<BR><BR>[Stack]<UL><LI>Max Depth = 100<LI>Call Chain = flash_test_wel &rArr; w25q_write_enable &rArr; w25q_send_write_control &rArr; w25q_init &rArr; GPIO_PinAFConfig
+</UL>
+<BR>[Calls]<UL><LI><a href="#[91]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_write_enable
+<LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_write_disable
+<LI><a href="#[8f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_status1
+</UL>
+<BR>[Called By]<UL><LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
+</UL>
+
+<P><STRONG><a name="[7e]"></a>led_init</STRONG> (Thumb, 42 bytes, Stack size 16 bytes, led.o(i.led_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 36<LI>Call Chain = led_init &rArr; GPIO_Init
 </UL>
 <BR>[Calls]<UL><LI><a href="#[93]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_StructInit
 <LI><a href="#[94]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_Init
 </UL>
-<BR>[Called By]<UL><LI><a href="#[85]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_hardware_init
+<BR>[Called By]<UL><LI><a href="#[7c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_hardware_init
 </UL>
 
-<P><STRONG><a name="[88]"></a>led_off</STRONG> (Thumb, 18 bytes, Stack size 8 bytes, led.o(i.led_off))
+<P><STRONG><a name="[7f]"></a>led_off</STRONG> (Thumb, 18 bytes, Stack size 8 bytes, led.o(i.led_off))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = led_off
 </UL>
 <BR>[Calls]<UL><LI><a href="#[95]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_WriteBit
 </UL>
-<BR>[Called By]<UL><LI><a href="#[85]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_hardware_init
+<BR>[Called By]<UL><LI><a href="#[7c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_hardware_init
 </UL>
 
 <P><STRONG><a name="[6c]"></a>main</STRONG> (Thumb, 30 bytes, Stack size 0 bytes, main.o(i.main))
-<BR><BR>[Stack]<UL><LI>Max Depth = 116<LI>Call Chain = main &rArr; app_flash_read_test &rArr; w25q_read_data &rArr; w25q_init &rArr; GPIO_PinAFConfig
+<BR><BR>[Stack]<UL><LI>Max Depth = 116<LI>Call Chain = main &rArr; flash_test_read_data &rArr; w25q_read_data &rArr; w25q_init &rArr; GPIO_PinAFConfig
 </UL>
-<BR>[Calls]<UL><LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_timer_init
-<LI><a href="#[85]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_hardware_init
-<LI><a href="#[82]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_flash_wel_test
-<LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_flash_status_test
-<LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_flash_read_test
-<LI><a href="#[7c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_flash_identify
+<BR>[Calls]<UL><LI><a href="#[90]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;flash_test_wel
+<LI><a href="#[8e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;flash_test_read_status
+<LI><a href="#[8c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;flash_test_read_data
+<LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;flash_test_identify
+<LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_timer_init
+<LI><a href="#[7c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_hardware_init
 </UL>
 <BR>[Called By]<UL><LI><a href="#[6b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_entry_main
 </UL>
 
-<P><STRONG><a name="[89]"></a>w25q_init</STRONG> (Thumb, 208 bytes, Stack size 32 bytes, w25q.o(i.w25q_init))
+<P><STRONG><a name="[80]"></a>w25q_init</STRONG> (Thumb, 208 bytes, Stack size 32 bytes, w25q.o(i.w25q_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 52<LI>Call Chain = w25q_init &rArr; GPIO_PinAFConfig
 </UL>
 <BR>[Calls]<UL><LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPI_StructInit
@@ -831,47 +865,47 @@ Global Symbols
 <LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_PinAFConfig
 <LI><a href="#[93]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_StructInit
 <LI><a href="#[94]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_Init
-<LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_AHB1PeriphClockCmd
+<LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_AHB1PeriphClockCmd
 </UL>
 <BR>[Called By]<UL><LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_send_write_control
-<LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_status1
-<LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_jedec_id
-<LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_data
-<LI><a href="#[85]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_hardware_init
+<LI><a href="#[8f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_status1
+<LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_jedec_id
+<LI><a href="#[8d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_data
+<LI><a href="#[7c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_hardware_init
 </UL>
 
-<P><STRONG><a name="[7f]"></a>w25q_read_data</STRONG> (Thumb, 194 bytes, Stack size 40 bytes, w25q.o(i.w25q_read_data))
+<P><STRONG><a name="[8d]"></a>w25q_read_data</STRONG> (Thumb, 194 bytes, Stack size 40 bytes, w25q.o(i.w25q_read_data))
 <BR><BR>[Stack]<UL><LI>Max Depth = 92<LI>Call Chain = w25q_read_data &rArr; w25q_init &rArr; GPIO_PinAFConfig
 </UL>
 <BR>[Calls]<UL><LI><a href="#[97]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetBits
 <LI><a href="#[9c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ResetBits
 <LI><a href="#[9d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_transfer_byte
-<LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
+<LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
 </UL>
-<BR>[Called By]<UL><LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_flash_read_test
+<BR>[Called By]<UL><LI><a href="#[8c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;flash_test_read_data
 </UL>
 
-<P><STRONG><a name="[7d]"></a>w25q_read_jedec_id</STRONG> (Thumb, 144 bytes, Stack size 32 bytes, w25q.o(i.w25q_read_jedec_id))
+<P><STRONG><a name="[8b]"></a>w25q_read_jedec_id</STRONG> (Thumb, 144 bytes, Stack size 32 bytes, w25q.o(i.w25q_read_jedec_id))
 <BR><BR>[Stack]<UL><LI>Max Depth = 84<LI>Call Chain = w25q_read_jedec_id &rArr; w25q_init &rArr; GPIO_PinAFConfig
 </UL>
 <BR>[Calls]<UL><LI><a href="#[97]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetBits
 <LI><a href="#[9c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ResetBits
 <LI><a href="#[9d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_transfer_byte
-<LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
+<LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
 </UL>
-<BR>[Called By]<UL><LI><a href="#[7c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_flash_identify
+<BR>[Called By]<UL><LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;flash_test_identify
 </UL>
 
-<P><STRONG><a name="[81]"></a>w25q_read_status1</STRONG> (Thumb, 112 bytes, Stack size 32 bytes, w25q.o(i.w25q_read_status1))
+<P><STRONG><a name="[8f]"></a>w25q_read_status1</STRONG> (Thumb, 112 bytes, Stack size 32 bytes, w25q.o(i.w25q_read_status1))
 <BR><BR>[Stack]<UL><LI>Max Depth = 84<LI>Call Chain = w25q_read_status1 &rArr; w25q_init &rArr; GPIO_PinAFConfig
 </UL>
 <BR>[Calls]<UL><LI><a href="#[97]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetBits
 <LI><a href="#[9c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ResetBits
 <LI><a href="#[9d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_transfer_byte
-<LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
+<LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
 </UL>
-<BR>[Called By]<UL><LI><a href="#[82]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_flash_wel_test
-<LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_flash_status_test
+<BR>[Called By]<UL><LI><a href="#[90]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;flash_test_wel
+<LI><a href="#[8e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;flash_test_read_status
 </UL>
 
 <P><STRONG><a name="[9d]"></a>w25q_transfer_byte</STRONG> (Thumb, 104 bytes, Stack size 16 bytes, w25q.o(i.w25q_transfer_byte))
@@ -882,25 +916,25 @@ Global Symbols
 <LI><a href="#[9f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPI_I2S_GetFlagStatus
 </UL>
 <BR>[Called By]<UL><LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_send_write_control
-<LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_status1
-<LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_jedec_id
-<LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_data
+<LI><a href="#[8f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_status1
+<LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_jedec_id
+<LI><a href="#[8d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_data
 </UL>
 
-<P><STRONG><a name="[84]"></a>w25q_write_disable</STRONG> (Thumb, 14 bytes, Stack size 8 bytes, w25q.o(i.w25q_write_disable))
+<P><STRONG><a name="[92]"></a>w25q_write_disable</STRONG> (Thumb, 14 bytes, Stack size 8 bytes, w25q.o(i.w25q_write_disable))
 <BR><BR>[Stack]<UL><LI>Max Depth = 84<LI>Call Chain = w25q_write_disable &rArr; w25q_send_write_control &rArr; w25q_init &rArr; GPIO_PinAFConfig
 </UL>
 <BR>[Calls]<UL><LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_send_write_control
 </UL>
-<BR>[Called By]<UL><LI><a href="#[82]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_flash_wel_test
+<BR>[Called By]<UL><LI><a href="#[90]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;flash_test_wel
 </UL>
 
-<P><STRONG><a name="[83]"></a>w25q_write_enable</STRONG> (Thumb, 14 bytes, Stack size 8 bytes, w25q.o(i.w25q_write_enable))
+<P><STRONG><a name="[91]"></a>w25q_write_enable</STRONG> (Thumb, 14 bytes, Stack size 8 bytes, w25q.o(i.w25q_write_enable))
 <BR><BR>[Stack]<UL><LI>Max Depth = 84<LI>Call Chain = w25q_write_enable &rArr; w25q_send_write_control &rArr; w25q_init &rArr; GPIO_PinAFConfig
 </UL>
 <BR>[Calls]<UL><LI><a href="#[9e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_send_write_control
 </UL>
-<BR>[Called By]<UL><LI><a href="#[82]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;app_flash_wel_test
+<BR>[Called By]<UL><LI><a href="#[90]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;flash_test_wel
 </UL>
 
 <P><STRONG><a name="[66]"></a>_fp_init</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, fpinit.o(x$fpl$fpinit))
@@ -914,62 +948,28 @@ Global Symbols
 <H3>
 Local Symbols
 </H3>
-<P><STRONG><a name="[7c]"></a>app_flash_identify</STRONG> (Thumb, 60 bytes, Stack size 16 bytes, main.o(i.app_flash_identify))
-<BR><BR>[Stack]<UL><LI>Max Depth = 100<LI>Call Chain = app_flash_identify &rArr; w25q_read_jedec_id &rArr; w25q_init &rArr; GPIO_PinAFConfig
-</UL>
-<BR>[Calls]<UL><LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_jedec_id
-</UL>
-<BR>[Called By]<UL><LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
-</UL>
-
-<P><STRONG><a name="[7e]"></a>app_flash_read_test</STRONG> (Thumb, 170 bytes, Stack size 24 bytes, main.o(i.app_flash_read_test))
-<BR><BR>[Stack]<UL><LI>Max Depth = 116<LI>Call Chain = app_flash_read_test &rArr; w25q_read_data &rArr; w25q_init &rArr; GPIO_PinAFConfig
-</UL>
-<BR>[Calls]<UL><LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_data
-</UL>
-<BR>[Called By]<UL><LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
-</UL>
-
-<P><STRONG><a name="[80]"></a>app_flash_status_test</STRONG> (Thumb, 124 bytes, Stack size 16 bytes, main.o(i.app_flash_status_test))
-<BR><BR>[Stack]<UL><LI>Max Depth = 100<LI>Call Chain = app_flash_status_test &rArr; w25q_read_status1 &rArr; w25q_init &rArr; GPIO_PinAFConfig
-</UL>
-<BR>[Calls]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_status1
-</UL>
-<BR>[Called By]<UL><LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
-</UL>
-
-<P><STRONG><a name="[82]"></a>app_flash_wel_test</STRONG> (Thumb, 188 bytes, Stack size 16 bytes, main.o(i.app_flash_wel_test))
-<BR><BR>[Stack]<UL><LI>Max Depth = 100<LI>Call Chain = app_flash_wel_test &rArr; w25q_write_enable &rArr; w25q_send_write_control &rArr; w25q_init &rArr; GPIO_PinAFConfig
-</UL>
-<BR>[Calls]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_write_enable
-<LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_write_disable
-<LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_read_status1
-</UL>
-<BR>[Called By]<UL><LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
-</UL>
-
-<P><STRONG><a name="[85]"></a>app_hardware_init</STRONG> (Thumb, 48 bytes, Stack size 8 bytes, main.o(i.app_hardware_init))
+<P><STRONG><a name="[7c]"></a>app_hardware_init</STRONG> (Thumb, 48 bytes, Stack size 8 bytes, main.o(i.app_hardware_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 60<LI>Call Chain = app_hardware_init &rArr; w25q_init &rArr; GPIO_PinAFConfig
 </UL>
-<BR>[Calls]<UL><LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
-<LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;led_off
-<LI><a href="#[87]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;led_init
-<LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;board_lowlevel_init
+<BR>[Calls]<UL><LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
+<LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;led_off
+<LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;led_init
+<LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;board_lowlevel_init
 </UL>
 <BR>[Called By]<UL><LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[8a]"></a>app_timer_init</STRONG> (Thumb, 150 bytes, Stack size 40 bytes, main.o(i.app_timer_init))
+<P><STRONG><a name="[81]"></a>app_timer_init</STRONG> (Thumb, 150 bytes, Stack size 40 bytes, main.o(i.app_timer_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 60<LI>Call Chain = app_timer_init &rArr; RCC_GetClocksFreq
 </UL>
-<BR>[Calls]<UL><LI><a href="#[8d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_TimeBaseStructInit
-<LI><a href="#[8e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_TimeBaseInit
-<LI><a href="#[90]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_ITConfig
-<LI><a href="#[91]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_Cmd
+<BR>[Calls]<UL><LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_TimeBaseStructInit
+<LI><a href="#[85]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_TimeBaseInit
+<LI><a href="#[87]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_ITConfig
+<LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_Cmd
 <LI><a href="#[7a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_ClearITPendingBit
-<LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_GetClocksFreq
-<LI><a href="#[8c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_APB1PeriphClockCmd
-<LI><a href="#[8f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;NVIC_Init
+<LI><a href="#[82]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_GetClocksFreq
+<LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_APB1PeriphClockCmd
+<LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;NVIC_Init
 </UL>
 <BR>[Called By]<UL><LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
@@ -980,10 +980,10 @@ Local Symbols
 <BR>[Calls]<UL><LI><a href="#[97]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetBits
 <LI><a href="#[9c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ResetBits
 <LI><a href="#[9d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_transfer_byte
-<LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
+<LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_init
 </UL>
-<BR>[Called By]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_write_enable
-<LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_write_disable
+<BR>[Called By]<UL><LI><a href="#[91]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_write_enable
+<LI><a href="#[92]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;w25q_write_disable
 </UL>
 
 <P><STRONG><a name="[78]"></a>SetSysClock</STRONG> (Thumb, 220 bytes, Stack size 12 bytes, system_stm32f4xx.o(i.SetSysClock))

@@ -38,3 +38,4 @@
 .\objects\main.o: ..\driver\led.h
 .\objects\main.o: D:\Keil5\Core\ARM\ARMCC\Bin\..\include\stdbool.h
 .\objects\main.o: ..\driver\w25q.h
+.\objects\main.o: ..\app\flash_test.h

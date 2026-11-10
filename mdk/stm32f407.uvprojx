@@ -394,6 +394,11 @@
               <FileType>1</FileType>
               <FilePath>..\app\board.c</FilePath>
             </File>
+            <File>
+              <FileName>flash_test.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\app\flash_test.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -1,6 +1,7 @@
 --cpu=Cortex-M4.fp.sp
 ".\objects\main.o"
 ".\objects\board.o"
+".\objects\flash_test.o"
 ".\objects\led.o"
 ".\objects\w25q.o"
 ".\objects\startup_stm32f40_41xxx.o"
