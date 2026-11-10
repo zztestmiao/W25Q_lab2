@@ -28,7 +28,7 @@ volatile uint32_t g_w25q1_sr1_result;
 volatile uint32_t g_w25q2_sr1_result;
 
 /* 第一颗Flash的WEL实验快照。结果0未执行、1通过、2失败、3跳过。
- * after_disable_result为1表示已通信确认WEL清零，否则不能认为清理成功。 */
+ * g_wel_disable_result为1表示已通信确认WEL清零，否则不能认为清理成功。 */
 volatile uint8_t g_wel_before;
 volatile uint8_t g_wel_after_enable;
 volatile uint8_t g_wel_after_disable;
@@ -83,13 +83,10 @@ void TIM6_DAC_IRQHandler(void)
     }
 }
 
-int main(void)
+/* 启动时首先调用，准备板级资源、LED和SPI。
+ * 不发送Flash修改命令，不启动TIM6。 */
+static void app_hardware_init(void)
 {
-    uint32_t id;
-    bool success;
-    uint8_t snapshot[16] = {0};
-    uint8_t status1 = 0u;
-
     board_lowlevel_init();
     led_init(&led1);
     led_init(&led2);
@@ -99,7 +96,15 @@ int main(void)
     led_off(&led3);
 	
     w25q_init();
-	
+}
+
+/* 在硬件初始化后调用，识别两颗Flash并保存ID及通信结果。
+ * 后续实验依据这些结果决定是否执行。 */
+static void app_flash_identify(void)
+{
+    uint32_t id;
+    bool success;
+
     success = w25q_read_jedec_id(1u, &id);
     g_w25q1_id = id;
     g_w25q1_status = success ? 1u : 2u;
@@ -107,7 +112,16 @@ int main(void)
     success = w25q_read_jedec_id(2u, &id);
     g_w25q2_id = id;
     g_w25q2_status = success ? 1u : 2u;
-	
+}
+
+/* 在识别后调用，从两颗Flash的地址1各读16字节。
+ * snapshot是本函数局部缓冲区，返回前复制到全局Watch数组。
+ * 读取失败时数组可能仅部分有效，必须同时检查read_status。 */
+static void app_flash_read_test(void)
+{
+    bool success;
+    uint8_t snapshot[16] = {0};
+
     /* 先确认型号，再按16MiB芯片的地址范围进行读取。 */
 	//#2.读取芯片1的数据
     if (g_w25q1_status == 1u && g_w25q1_id == 0xEF4018u)
@@ -146,7 +160,15 @@ int main(void)
     {
         g_w25q2_read_status = 3u;
     }
-	
+}
+
+/* 在识别后调用，保存两颗Flash的SR1快照，不修改芯片内容。
+ * 仅通信成功才覆盖状态字节，失败或跳过见sr1_result。 */
+static void app_flash_status_test(void)
+{
+    bool success;
+    uint8_t status1 = 0u;
+
     /* 仅在对应型号识别成功后读取状态，成功时才保存结果。 */
     if (g_w25q1_status == 1u && g_w25q1_id == 0xEF4018u)
     {
@@ -174,6 +196,16 @@ int main(void)
     {
         g_w25q2_sr1_result = 3u;
     }
+}
+
+/* 必须在识别和状态读取之后、启动TIM6之前调用。
+ * 第一颗执行06→05→04→05，记录快照及两项验证结果。
+ * 使能失败也尝试关闭；不擦除、不编程，清理失败单独报告。
+ * 当前仅在启动时调用一次，不应并发或反复调用。 */
+static void app_flash_wel_test(void)
+{
+    bool success;
+    uint8_t status1 = 0u;
 
     /* 先仅在第一颗芯片上验证WEL，第二颗保持原来的只读流程。
      * 使用前面刚读到的SR1，只有通信成功、型号正确且BUSY为0才开始。 */
@@ -212,10 +244,23 @@ int main(void)
         g_wel_test_result = 3u;
         g_wel_disable_result = 3u;
     }
+}
 
+int main(void)
+{
+    /* 先准备接口，再按识别、读取、状态、写使能的顺序完成实验。 */
+    app_hardware_init();
+    app_flash_identify();
+    app_flash_read_test();
+    app_flash_status_test();
+    app_flash_wel_test();
+
+    /* 实验完成后启动TIM6，LED1每约0.5秒翻转。 */
     app_timer_init();
 
-    /* 主循环不再控制灯；LED1亮灭只能由TIM6中断触发。 */
+    /* 主循环等待中断，不重复执行Flash实验。 */
     while (1)
-    __NOP();
+    {
+        __NOP();
+    }
 }
