@@ -32,7 +32,7 @@ bool w25q_read_status1(uint8_t chip, uint8_t *status);
 
 /* 独立发送06/04，开启或关闭写使能。chip为1或2。
  * 先初始化接口并确认芯片空闲，禁止并发调用。
- * true仅为通信完成，需05读回WEL；不擦除、不编程。 */z
+ * true仅为通信完成，需05读回WEL；不擦除、不编程。 */
 bool w25q_write_enable(uint8_t chip);
 bool w25q_write_disable(uint8_t chip);
 

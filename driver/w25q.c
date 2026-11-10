@@ -4,6 +4,47 @@
 /* 轮询次数上限，只用于避免无限等待，不是精确的毫秒计时。 */
 #define W25Q_WAIT_LIMIT 100000u
 
+/* 一次独立的写使能控制事务，不带地址和数据。
+ * chip为1或2，command仅由下方06/04接口传入。
+ * 调用前初始化SPI，并确认芯片空闲，禁止并发占用总线。
+ * true仅表示SPI传输完成，必须另读SR1验证WEL。
+ * 失败时释放片选并恢复STM32 SPI，不保证Flash状态恢复。 */
+static bool w25q_send_write_control(uint8_t chip, uint8_t command)
+{
+    uint16_t cs_pin;
+    uint8_t ignored;
+    bool success;
+
+    if (chip != 1u && chip != 2u)
+    {
+        return false;
+    }
+    cs_pin = (chip == 1u) ? GPIO_Pin_13 : GPIO_Pin_14;
+    GPIO_SetBits(GPIOE, GPIO_Pin_13 | GPIO_Pin_14);
+    GPIO_ResetBits(GPIOE, cs_pin);
+    success = w25q_transfer_byte(command, &ignored);
+    /* 拉高CS结束命令，不能与后面的05查询合并片选。 */
+    GPIO_SetBits(GPIOE, GPIO_Pin_13 | GPIO_Pin_14);
+    if (!success)
+    {
+        w25q_init();
+    }
+    return success;
+}
+
+/* 发送06，请求置位WEL。本身不擦除或编程。
+ * 参数、前置条件及失败处理见上方辅助函数，调用后读SR1验证。 */
+bool w25q_write_enable(uint8_t chip)
+{
+    return w25q_send_write_control(chip, 0x06u);
+}
+
+/* 发送04，请求清除WEL。调用后读SR1确认关闭成功。 */
+bool w25q_write_disable(uint8_t chip)
+{
+    return w25q_send_write_control(chip, 0x04u);
+}
+
 bool w25q_read_data(uint8_t chip, uint32_t address,
                     uint8_t *buffer, uint32_t length)
 {
