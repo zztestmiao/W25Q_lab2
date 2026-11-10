@@ -1,0 +1,10 @@
+.\objects\stm32f4xx_fmc.o: ..\firmware\driver\src\stm32f4xx_fmc.c
+.\objects\stm32f4xx_fmc.o: ..\firmware\driver\inc\stm32f4xx_fmc.h
+.\objects\stm32f4xx_fmc.o: ..\firmware\cmsis\device\stm32f4xx.h
+.\objects\stm32f4xx_fmc.o: ..\firmware\cmsis\core\core_cm4.h
+.\objects\stm32f4xx_fmc.o: D:\Keil5\Core\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\stm32f4xx_fmc.o: ..\firmware\cmsis\core\core_cmInstr.h
+.\objects\stm32f4xx_fmc.o: ..\firmware\cmsis\core\core_cmFunc.h
+.\objects\stm32f4xx_fmc.o: ..\firmware\cmsis\core\core_cmSimd.h
+.\objects\stm32f4xx_fmc.o: ..\firmware\cmsis\device\system_stm32f4xx.h
+.\objects\stm32f4xx_fmc.o: ..\firmware\driver\inc\stm32f4xx_rcc.h
