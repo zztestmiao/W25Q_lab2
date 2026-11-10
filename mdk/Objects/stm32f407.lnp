@@ -2,6 +2,8 @@
 ".\objects\main.o"
 ".\objects\board.o"
 ".\objects\flash_test.o"
+".\objects\app_init.o"
+".\objects\app_timer.o"
 ".\objects\led.o"
 ".\objects\w25q.o"
 ".\objects\startup_stm32f40_41xxx.o"
