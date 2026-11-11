@@ -38,4 +38,9 @@ void flash_test_erase_poll(void);
  * 当前复用试验区，正式使用前须明确区域用途和备份。 */
 void flash_test_program_poll(void);
 
+/* 手动跨页实验，默认不执行，每次上电只尝试一次。
+ * request写1后在第一颗FFF0FA写300字节，先检查全FF和非法参数。
+ * 不要同时触发其他实验，失败保留现场，不自动擦除或重试。 */
+void flash_test_cross_poll(void);
+
 #endif

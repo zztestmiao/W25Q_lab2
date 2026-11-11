@@ -373,3 +373,90 @@ void flash_test_program_poll(void)
     g_page_mismatch = mismatch;
     g_page_program_result = (mismatch == 0u) ? 1u : 7u;
 }
+
+/* 跨页测试固定在第一颗0xFFF0FA～0xFFF225，共300字节。
+ * 数据为i的低8位，拆成6+256+38，均在已备份的最后一个扇区内。
+ * result：0未触发、1通过、2前置不满足、3非法参数测试失败、
+ * 4预读失败、5目标非FF、6写入失败、7读回失败、8不一致、9执行中。
+ * invalid_pass为已拒绝的五种非法调用数，仅值5通过。
+ * mismatch和readback最终比较仅在result为1或8时有效。 */
+volatile uint32_t g_cross_request;
+volatile uint32_t g_cross_result;
+volatile uint32_t g_cross_invalid_pass;
+volatile uint32_t g_cross_mismatch;
+uint8_t g_cross_readback[300];
+
+void flash_test_cross_poll(void)
+{
+    static bool attempted = false;
+    uint8_t expected[300];
+    uint32_t i;
+    uint32_t mismatch = 0u;
+
+    if (attempted || g_cross_request != 1u)
+    {
+        return;
+    }
+    attempted = true;
+    g_cross_request = 0u;
+    if (g_w25q1_status != 1u || g_w25q1_id != 0xEF4018u ||
+        g_sector_read_result != 1u ||
+        (g_sector_erase_result != 0u && g_sector_erase_result != 1u) ||
+        g_page_program_result != 0u)
+    {
+        g_cross_result = 2u;
+        return;
+    }
+    g_cross_result = 9u;
+    /* 五种参数必在驱动入口拒绝，不产生SPI写命令。
+     * expected在此仅传有效地址，非法参数保证不会读取其内容。 */
+    if (!w25q_page_program(1u, 0xFFF0FAu, expected, 10u, 100000u))
+        ++g_cross_invalid_pass;
+    if (!w25q_write_data(1u, 0xFFFFF0u, expected, 32u, 100000u))
+        ++g_cross_invalid_pass;
+    if (!w25q_write_data(1u, 0xFFF0FAu, 0, 1u, 100000u))
+        ++g_cross_invalid_pass;
+    if (!w25q_write_data(1u, 0xFFF0FAu, expected, 0u, 100000u))
+        ++g_cross_invalid_pass;
+    if (!w25q_write_data(1u, 0xFFF0FAu, expected, 1u, 0u))
+        ++g_cross_invalid_pass;
+    if (g_cross_invalid_pass != 5u)
+    {
+        g_cross_result = 3u;
+        return;
+    }
+    if (!w25q_wait_ready(1u, 100000u) ||
+        !w25q_read_data(1u, 0xFFF0FAu, g_cross_readback, sizeof(g_cross_readback)))
+    {
+        g_cross_result = 4u;
+        return;
+    }
+    for (i = 0u; i < sizeof(expected); ++i)
+    {
+        if (g_cross_readback[i] != 0xFFu)
+        {
+            g_cross_result = 5u;
+            return;
+        }
+        expected[i] = (uint8_t)i;
+    }
+    if (!w25q_write_data(1u, 0xFFF0FAu, expected, sizeof(expected), 100000u))
+    {
+        g_cross_result = 6u;
+        return;
+    }
+    if (!w25q_read_data(1u, 0xFFF0FAu, g_cross_readback, sizeof(g_cross_readback)))
+    {
+        g_cross_result = 7u;
+        return;
+    }
+    for (i = 0u; i < sizeof(expected); ++i)
+    {
+        if (g_cross_readback[i] != expected[i])
+        {
+            ++mismatch;
+        }
+    }
+    g_cross_mismatch = mismatch;
+    g_cross_result = (mismatch == 0u) ? 1u : 8u;
+}

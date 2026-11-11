@@ -55,4 +55,11 @@ bool w25q_page_program(uint8_t chip, uint32_t address,
                        const uint8_t *buffer, uint32_t length,
                        uint32_t max_polls);
 
+/* 跨页分段写入，非空数据且长度非零，禁止超容量，不自动擦除。
+ * 初始化后独占调用，失败时前面各页可能已写入，成功仍需读回。
+ * max_polls为每个单页阶段的查询次数，不是总操作毫秒数。 */
+bool w25q_write_data(uint8_t chip, uint32_t address,
+                     const uint8_t *buffer, uint32_t length,
+                     uint32_t max_polls);
+
 #endif

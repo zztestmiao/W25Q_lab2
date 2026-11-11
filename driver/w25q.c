@@ -425,3 +425,37 @@ bool w25q_page_program(uint8_t chip, uint32_t address,
     }
     return w25q_wait_ready(chip, max_polls);
 }
+
+/* 将一段非空数据按256字节页边界拆分编程，不自动擦除。
+ * 参数和独占总线要求同page_program，长度可跨页但不能超容量。
+ * 调用者负责目标已擦除、数据来源有效及备份。
+ * 某页失败立即停止，之前的页可能已写入，不回滚、不自动重试。
+ * true仍需整段读回校验；max_polls对每次单页操作分别生效。 */
+bool w25q_write_data(uint8_t chip, uint32_t address,
+                      const uint8_t *buffer, uint32_t length,
+                      uint32_t max_polls)
+{
+    uint32_t chunk;
+
+    if ((chip != 1u && chip != 2u) || buffer == 0 || length == 0u ||
+        address >= 0x1000000u || length > 0x1000000u - address || max_polls == 0u)
+    {
+        return false;
+    }
+    while (length != 0u)
+    {
+        chunk = 256u - (address & 0xFFu);
+        if (chunk > length)
+        {
+            chunk = length;
+        }
+        if (!w25q_page_program(chip, address, buffer, chunk, max_polls))
+        {
+            return false;
+        }
+        address += chunk;
+        buffer += chunk;
+        length -= chunk;
+    }
+    return true;
+}
