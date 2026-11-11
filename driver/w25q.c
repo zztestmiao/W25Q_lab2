@@ -439,3 +439,43 @@ bool w25q_page_program(uint8_t chip, uint32_t address,
     }
     return w25q_wait_ready(chip, max_polls);
 }
+
+/* 跨页分段编程：根据当前地址的页内偏移，逐页调用单页函数。
+ * chip为1或2；buffer须有效且至少包含length字节；length不能为0。
+ * 调用者须先初始化SPI、确认目标可写并做好备份，独占SPI总线。
+ * 不自动擦除。max_polls为每次单页阶段的最多查询次数，不是毫秒。
+ * true表示全部分段完成，仍须读回比较；false时此前各页可能已写入，
+ * 也可能仍忙，不回滚、不自动重试。禁止在中断中调用。 */
+bool w25q_write_data(uint8_t chip, uint32_t address,
+                      const uint8_t *buffer, uint32_t length,
+                      uint32_t max_polls)
+{
+    uint32_t chunk;
+
+    /* 整段范围先检查，避免先写前几页才发现后面越界。
+     * 先拒绝越界地址，再用容量减地址，避免加法整数回绕。 */
+    if ((chip != 1u && chip != 2u) || buffer == 0 || length == 0u ||
+        address >= 0x1000000u || length > 0x1000000u - address || max_polls == 0u)
+    {
+        return false;
+    }
+    while (length != 0u)
+    {
+        /* 先算本页剩余空间，再取它与剩余数据长度中的较小值。 */
+        chunk = 256u - (address & 0xFFu);
+        if (chunk > length)
+        {
+            chunk = length;
+        }
+        /* 单页函数负责独立的06、02和等待完成，不在这里直接拼SPI命令。 */
+        if (!w25q_page_program(chip, address, buffer, chunk, max_polls))
+        {
+            return false;
+        }
+        /* 同步推进Flash目的地址、RAM源指针，并扣除已写长度。 */
+        address += chunk;
+        buffer += chunk;
+        length -= chunk;
+    }
+    return true;
+}
