@@ -183,3 +183,54 @@ void flash_test_wel(void)
     }
 }
 
+
+/* 完整候选扇区放在全局RAM，避免4096字节占用函数栈。
+ * buffer仅为RAM快照，断电丢失，尚不等于电脑上的持久备份。
+ * result：0未执行、1完整读取成功、2失败、3前置条件不满足。
+ * non_ff仅在result为1时有效；全FF也不能证明该区域无人使用。 */
+uint8_t g_sector_snapshot[4096];
+volatile uint32_t g_sector_read_result;
+volatile uint32_t g_sector_non_ff;
+
+/* 在识别、状态及WEL实验后、启动TIM6前单次调用。
+ * 只检查第一颗最后一个4KiB扇区，直接读取到全局缓冲区。
+ * 失败可能留下部分内容，此时禁止用它作为完整备份或擦除依据。 */
+void flash_test_sector_read(void)
+{
+    uint8_t status1;
+    uint32_t i;
+    uint32_t non_ff = 0u;
+
+    if (g_w25q1_status != 1u || g_w25q1_id != 0xEF4018u)
+    {
+        g_sector_read_result = 3u;
+        return;
+    }
+    /* 重新查询当前状态，不用之前的旧快照判断空闲。 */
+    if (!w25q_read_status1(1u, &status1))
+    {
+        g_sector_read_result = 2u;
+        return;
+    }
+    if ((status1 & 0x01u) != 0u)
+    {
+        g_sector_read_result = 3u;
+        return;
+    }
+    if (!w25q_read_data(1u, 0xFFF000u,
+                        g_sector_snapshot, sizeof(g_sector_snapshot)))
+    {
+        g_sector_read_result = 2u;
+        return;
+    }
+    for (i = 0u; i < sizeof(g_sector_snapshot); ++i)
+    {
+        if (g_sector_snapshot[i] != 0xFFu)
+        {
+            ++non_ff;
+        }
+    }
+    g_sector_non_ff = non_ff;
+    /* 最后发布成功，供调试器确认整个数组及统计已经准备好。 */
+    g_sector_read_result = 1u;
+}

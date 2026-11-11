@@ -11,6 +11,8 @@ int main(void)
     flash_test_read_data();
     flash_test_read_status();
     flash_test_wel();
+    /* 只读候选测试扇区到RAM，供后续检查和导出备份。 */
+    flash_test_sector_read();
 
     /* 实验完成后启动TIM6，LED1每约0.5秒翻转。 */
     app_timer_start();

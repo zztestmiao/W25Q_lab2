@@ -21,4 +21,9 @@ void flash_test_read_status(void);
  * 无等待忙完成的能力，前提不满足时直接记录跳过。 */
 void flash_test_wel(void);
 
+/* 前四项实验后调用，只读第一颗最后一个4KiB扇区到RAM。
+ * 结果及统计见g_sector_read_result和g_sector_non_ff。
+ * 禁止把RAM快照当作已完成电脑备份，不修改Flash。 */
+void flash_test_sector_read(void);
+
 #endif
