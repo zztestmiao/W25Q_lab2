@@ -389,17 +389,26 @@ bool w25q_page_program(uint8_t chip, uint32_t address,
     uint8_t status1;
     uint32_t i;
     bool sent;
-
-    if ((chip != 1u && chip != 2u) || buffer == 0 || length == 0u ||
-        address >= 0x1000000u || length > 0x1000000u - address ||
-        length > 256u - (address & 0xFFu) || max_polls == 0u)
+    /* 先验证参数范围，再产生任何总线操作。
+     * 用容量减地址判断剩余空间，避免address+length发生整数回绕。
+     * 还要检查是否跨页：每页256字节，地址低8位加长度不能超过256。 */
+    if ((chip != 1u && chip != 2u) || 
+        buffer == 0 || length == 0u ||
+        address >= 0x1000000u || 
+        length > 0x1000000u - address ||
+        length > 256u - (address & 0xFFu) || 
+        max_polls == 0u)
     {
         return false;
     }
+    /* 先等待Flash空闲，再发送写使能，最后确认WEL置位。
+     * 不能只认为06发送成功就允许编程。 */
     if (!w25q_wait_ready(chip, max_polls) || !w25q_write_enable(chip))
     {
         return false;
     }
+    /* 读取状态寄存器1，确认WEL=1且BUSY=0，才允许编程。
+     * 这里不再查询WEL位是否清零，因为06之后可能被其他命令清除。 */
     if (!w25q_read_status1(chip, &status1) || (status1 & 0x03u) != 0x02u)
     {
         return false;
@@ -407,10 +416,15 @@ bool w25q_page_program(uint8_t chip, uint32_t address,
     cs_pin = (chip == 1u) ? GPIO_Pin_13 : GPIO_Pin_14;
     GPIO_SetBits(GPIOE, GPIO_Pin_13 | GPIO_Pin_14);
     GPIO_ResetBits(GPIOE, cs_pin);
+    /* 02后紧跟三字节地址，高字节在前，再发送真实待写数据。
+     * 整个命令保持CS低，最后拉高CS才提交内部编程。
+     * 这样从地址开始的length字节将被编程。 */
     sent = w25q_transfer_byte(0x02u, &ignored) &&
            w25q_transfer_byte((uint8_t)(address >> 16), &ignored) &&
            w25q_transfer_byte((uint8_t)(address >> 8), &ignored) &&
            w25q_transfer_byte((uint8_t)address, &ignored);
+    /* 发送数据阶段，若中途失败则停止发送，后续字节不再尝试。
+     * 发送时收到的同步字节读走后丢弃，避免接收溢出。 */
     for (i = 0u; sent && i < length; ++i)
     {
         /* 数据阶段发送真实待写字节，收到的同步字节读走后丢弃。 */
@@ -424,38 +438,4 @@ bool w25q_page_program(uint8_t chip, uint32_t address,
         return false;
     }
     return w25q_wait_ready(chip, max_polls);
-}
-
-/* 将一段非空数据按256字节页边界拆分编程，不自动擦除。
- * 参数和独占总线要求同page_program，长度可跨页但不能超容量。
- * 调用者负责目标已擦除、数据来源有效及备份。
- * 某页失败立即停止，之前的页可能已写入，不回滚、不自动重试。
- * true仍需整段读回校验；max_polls对每次单页操作分别生效。 */
-bool w25q_write_data(uint8_t chip, uint32_t address,
-                      const uint8_t *buffer, uint32_t length,
-                      uint32_t max_polls)
-{
-    uint32_t chunk;
-
-    if ((chip != 1u && chip != 2u) || buffer == 0 || length == 0u ||
-        address >= 0x1000000u || length > 0x1000000u - address || max_polls == 0u)
-    {
-        return false;
-    }
-    while (length != 0u)
-    {
-        chunk = 256u - (address & 0xFFu);
-        if (chunk > length)
-        {
-            chunk = length;
-        }
-        if (!w25q_page_program(chip, address, buffer, chunk, max_polls))
-        {
-            return false;
-        }
-        address += chunk;
-        buffer += chunk;
-        length -= chunk;
-    }
-    return true;
 }
