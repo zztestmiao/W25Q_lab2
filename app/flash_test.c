@@ -295,3 +295,81 @@ void flash_test_erase_poll(void)
     g_sector_after_non_ff = non_ff;
     g_sector_erase_result = (non_ff == 0u) ? 1u : 5u;
 }
+
+/* 每次上电最多一次，request写1后尝试写16字节00～0F。
+ * result：0未执行、1写入并比对通过、2前置不满足、3预读失败、
+ * 4目标非全FF拒绝写入、5编程失败、6读回失败、7不一致、8执行中。
+ * readback仅在结果1或7时有效，mismatch也仅在这两个结果下有效。 */
+volatile uint32_t g_page_program_request;
+volatile uint32_t g_page_program_result;
+volatile uint32_t g_page_mismatch;
+uint8_t g_page_readback[16];
+
+void flash_test_program_poll(void)
+{
+    static bool attempted = false;
+    uint8_t expected[16];
+    uint8_t status1;
+    uint32_t i;
+    uint32_t mismatch = 0u;
+
+    // 仅在第一次上电且用户确认后尝试编程，避免反复写入。
+    if (attempted || g_page_program_request != 1u)
+    {
+        return;
+    }
+    attempted = true;
+    // 消费请求，防止主循环反复编程。即便失败也保留锁定，重新实验需复位并重新确认。
+    g_page_program_request = 0u;
+    /* 操作时不要同时请求擦除与写入；main先轮询擦除，再轮询写入。
+     * 若此前擦除失败则停止，不能忽略其未知状态继续写。 */
+    if (g_w25q1_status != 1u || g_w25q1_id != 0xEF4018u ||
+        g_sector_read_result != 1u ||
+        (g_sector_erase_result != 0u && g_sector_erase_result != 1u))
+    {
+        g_page_program_result = 2u;
+        return;
+    }
+    /* 先读回扇区末尾16字节，确认全FF后才尝试编程。
+     * 读取失败或非全FF都不尝试写入，避免破坏原有数据。 */
+    g_page_program_result = 8u;
+    /* 读取前确认空闲，避免正在擦除或编程时发起新命令。 */
+    if (!w25q_read_status1(1u, &status1) || (status1 & 0x01u) != 0u ||
+        !w25q_read_data(1u, 0xFFF000u, g_page_readback, sizeof(g_page_readback)))
+    {
+        g_page_program_result = 3u;
+        return;
+    }
+    /* 预读后检查全FF，非全FF不尝试编程，避免破坏原有数据。 */
+    for (i = 0u; i < sizeof(expected); ++i)
+    {
+        if (g_page_readback[i] != 0xFFu)
+        {
+            g_page_program_result = 4u;
+            return;
+        }
+        expected[i] = (uint8_t)i;
+    }
+    //尝试编程16字节，地址0xFFF000，数据为00～0F，最大查询次数100000。
+    if (!w25q_page_program(1u, 0xFFF000u, expected, sizeof(expected), 100000u))
+    {
+        g_page_program_result = 5u;
+        return;
+    }
+    //编程后读回16字节，保存到g_page_readback，如果读取失败则设置g_page_program_result为6并返回
+    if (!w25q_read_data(1u, 0xFFF000u, g_page_readback, sizeof(g_page_readback)))
+    {
+        g_page_program_result = 6u;
+        return;
+    }
+    //比对读回数据与预期数据，统计不一致的字节数，保存到g_page_mismatch，如果不一致则设置g_page_program_result为7，否则为1
+    for (i = 0u; i < sizeof(expected); ++i)
+    {
+        if (g_page_readback[i] != expected[i])
+        {
+            ++mismatch;
+        }
+    }
+    g_page_mismatch = mismatch;
+    g_page_program_result = (mismatch == 0u) ? 1u : 7u;
+}

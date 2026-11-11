@@ -17,10 +17,11 @@ int main(void)
     /* 实验完成后启动TIM6，LED1每约0.5秒翻转。 */
     app_timer_start();
 
-    /* 主循环仅轮询手动擦除请求，启动阶段的其他实验不重复执行。 */
+    /* 主循环轮询手动擦除及编程请求，启动阶段的其他实验不重复执行。 */
     while (1)
     {
         flash_test_erase_poll();
+        flash_test_program_poll();
         __NOP();
     }
 }

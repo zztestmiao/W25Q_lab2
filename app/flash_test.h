@@ -32,4 +32,10 @@ void flash_test_sector_read(void);
  * 将覆盖RAM快照为擦除后数据，失败禁止盲目重试。 */
 void flash_test_erase_poll(void);
 
+/* 主循环中单次响应手动写入请求，默认不执行。
+ * 固定第一颗0xFFF000写16字节，仅目标全FF时允许，无自动擦除。
+ * 不要同时触发擦除与编程；失败不重试。结果见g_page_program_result。
+ * 当前复用试验区，正式使用前须明确区域用途和备份。 */
+void flash_test_program_poll(void);
+
 #endif

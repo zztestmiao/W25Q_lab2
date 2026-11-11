@@ -373,3 +373,55 @@ bool w25q_erase_sector(uint8_t chip, uint32_t address, uint32_t max_polls)
     }
     return w25q_wait_ready(chip, max_polls);
 }
+
+/* 单次页编程，最多256字节且禁止跨页，不自动擦除。
+ * chip为1或2，buffer有效且至少length字节，length必须非零。
+ * 调用前确认目标可写、必要备份完成、接口已初始化且独占SPI。
+ * true只表示命令及等待完成，必须另行读回比较。
+ * false可能已经部分写入或仍忙，不自动重试，也不保证WEL已清零。
+ * max_polls为每阶段查询次数，不是毫秒；禁止在中断调用。 */
+bool w25q_page_program(uint8_t chip, uint32_t address,
+                       const uint8_t *buffer, uint32_t length,
+                       uint32_t max_polls)
+{
+    uint16_t cs_pin;
+    uint8_t ignored;
+    uint8_t status1;
+    uint32_t i;
+    bool sent;
+
+    if ((chip != 1u && chip != 2u) || buffer == 0 || length == 0u ||
+        address >= 0x1000000u || length > 0x1000000u - address ||
+        length > 256u - (address & 0xFFu) || max_polls == 0u)
+    {
+        return false;
+    }
+    if (!w25q_wait_ready(chip, max_polls) || !w25q_write_enable(chip))
+    {
+        return false;
+    }
+    if (!w25q_read_status1(chip, &status1) || (status1 & 0x03u) != 0x02u)
+    {
+        return false;
+    }
+    cs_pin = (chip == 1u) ? GPIO_Pin_13 : GPIO_Pin_14;
+    GPIO_SetBits(GPIOE, GPIO_Pin_13 | GPIO_Pin_14);
+    GPIO_ResetBits(GPIOE, cs_pin);
+    sent = w25q_transfer_byte(0x02u, &ignored) &&
+           w25q_transfer_byte((uint8_t)(address >> 16), &ignored) &&
+           w25q_transfer_byte((uint8_t)(address >> 8), &ignored) &&
+           w25q_transfer_byte((uint8_t)address, &ignored);
+    for (i = 0u; sent && i < length; ++i)
+    {
+        /* 数据阶段发送真实待写字节，收到的同步字节读走后丢弃。 */
+        sent = w25q_transfer_byte(buffer[i], &ignored);
+    }
+    /* 即便中途失败，拉高CS也可能提交已收到的部分数据。 */
+    GPIO_SetBits(GPIOE, GPIO_Pin_13 | GPIO_Pin_14);
+    if (!sent)
+    {
+        w25q_init();
+        return false;
+    }
+    return w25q_wait_ready(chip, max_polls);
+}

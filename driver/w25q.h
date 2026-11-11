@@ -47,4 +47,12 @@ bool w25q_wait_ready(uint8_t chip, uint32_t max_polls);
  * false时可能已擦除、仍忙或WEL仍置位，禁止假设数据未变或盲目重试。 */
 bool w25q_erase_sector(uint8_t chip, uint32_t address, uint32_t max_polls);
 
+/* 单页编程：非空数据、长度1～256，且不跨当前页边界。
+ * 先初始化接口并独占SPI，调用者负责确认可写和必要备份。
+ * 不自动擦除，true仍需读回；false可能已部分写入或仍忙。
+ * max_polls是查询次数，不是毫秒。 */
+bool w25q_page_program(uint8_t chip, uint32_t address,
+                       const uint8_t *buffer, uint32_t length,
+                       uint32_t max_polls);
+
 #endif
