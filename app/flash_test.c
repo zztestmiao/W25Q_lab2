@@ -197,32 +197,38 @@ volatile uint32_t g_sector_non_ff;
  * 失败可能留下部分内容，此时禁止用它作为完整备份或擦除依据。 */
 void flash_test_sector_read(void)
 {
-    uint8_t status1;
+    uint8_t status1;//保存读取的状态寄存器1
     uint32_t i;
-    uint32_t non_ff = 0u;
+    uint32_t non_ff = 0u;//统计非0xFF字节的数量，供调试器观察
 
+    // 仅在第一颗芯片识别成功且型号正确时才尝试读取扇区
     if (g_w25q1_status != 1u || g_w25q1_id != 0xEF4018u)
     {
         g_sector_read_result = 3u;
         return;
     }
     /* 重新查询当前状态，不用之前的旧快照判断空闲。 */
+    //查询状态寄存器1，保存到status1，如果失败则设置g_sector_read_result为2并返回
     if (!w25q_read_status1(1u, &status1))
     {
         g_sector_read_result = 2u;
         return;
     }
+    //如果状态寄存器的BUSY位为1，说明Flash正在忙碌中，则设置g_sector_read_result为3并返回
     if ((status1 & 0x01u) != 0u)
     {
         g_sector_read_result = 3u;
         return;
     }
+    //读取最后一个4KiB扇区的内容到g_sector_snapshot
+    //如果读取失败，g_sector_snapshot可能只更新了部分内容，不能作为完整备份
     if (!w25q_read_data(1u, 0xFFF000u,
                         g_sector_snapshot, sizeof(g_sector_snapshot)))
     {
         g_sector_read_result = 2u;
         return;
     }
+    //如果读取成功，统计非0xFF字节的数量，存入g_sector_non_ff
     for (i = 0u; i < sizeof(g_sector_snapshot); ++i)
     {
         if (g_sector_snapshot[i] != 0xFFu)

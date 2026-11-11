@@ -36,4 +36,15 @@ bool w25q_read_status1(uint8_t chip, uint8_t *status);
 bool w25q_write_enable(uint8_t chip);
 bool w25q_write_disable(uint8_t chip);
 
+/* 最多查询max_polls次05，成功读到BUSY=0返回true。
+ * chip为1或2，次数非零。参数错误、通信失败或次数耗尽返回false。
+ * 先初始化SPI，禁止并发；此次数不是毫秒，失败不表示Flash已停止工作。 */
+bool w25q_wait_ready(uint8_t chip, uint32_t max_polls);
+
+/* 擦除整个4KiB扇区，调用前核实用途并备份，禁止并发。
+ * address须4KiB对齐且不超过0xFFF000；max_polls非零且不是毫秒。
+ * true表示命令流程完成且空闲，仍需读回验证。
+ * false时可能已擦除、仍忙或WEL仍置位，禁止假设数据未变或盲目重试。 */
+bool w25q_erase_sector(uint8_t chip, uint32_t address, uint32_t max_polls);
+
 #endif

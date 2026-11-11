@@ -284,3 +284,88 @@ void w25q_init(void)
     SPI_Init(SPI1, &spi);
     SPI_Cmd(SPI1, ENABLE);
 }
+
+/* 在有限次查询内等待Flash内部擦写空闲。
+ * chip为1或2，max_polls必须大于0；调用前初始化SPI。
+ * 每次查询都是独立05事务，不占用CS等待其他业务，也不修改Flash。
+ * true表示某次成功读取且BUSY=0；false表示参数错误、收发失败
+ * 或查询次数耗尽。次数不是毫秒，不能承诺精确超时时间。
+ * 失败后Flash可能仍在擦写，不能据此贸然继续新命令或关闭其电源。
+ * 当前用于启动阶段的阻塞教学驱动，不在中断或并发环境调用。
+ * 未来正式OTA接入真实时间基准后，按手册最大擦写时间设置期限。 */
+bool w25q_wait_ready(uint8_t chip, uint32_t max_polls)
+{
+    uint8_t status1;
+    uint32_t poll;
+
+    if ((chip != 1u && chip != 2u) || max_polls == 0u)
+    {
+        return false;
+    }
+    for (poll = 0u; poll < max_polls; ++poll)
+    {
+        if (!w25q_read_status1(chip, &status1))
+        {
+            return false;
+        }
+        /* 只判断bit0，不把WEL或其他状态位当作忙标志。 */
+        if ((status1 & 0x01u) == 0u)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+/* 擦除一个4KiB扇区，永久改变该扇区所有4096字节。
+ * address必须为扇区起点（低12位为0），范围0～0xFFF000。
+ * 调用者必须确认区域用途、完成必要备份，先初始化SPI且独占总线。
+ * max_polls为每阶段最多状态查询次数，不是毫秒。
+ * true仅表示前置检查通过、擦除命令收发完成并最终读到BUSY=0，
+ * 不保证芯片实际执行了擦除（例如保护位可能阻止操作），需读回验证。
+ * false可能发生在命令已提交之后，不能假设原数据仍完好或Flash已空闲。
+ * 本函数不自动重试，不在失败后继续发其他修改命令。 */
+bool w25q_erase_sector(uint8_t chip, uint32_t address, uint32_t max_polls)
+{
+    uint16_t cs_pin;
+    uint8_t status1;
+    uint8_t ignored;
+    bool sent;
+
+    if ((chip != 1u && chip != 2u) || address > 0xFFF000u ||
+        (address & 0xFFFu) != 0u || max_polls == 0u)
+    {
+        return false;
+    }
+    if (!w25q_wait_ready(chip, max_polls) || !w25q_write_enable(chip))
+    {
+        return false;
+    }
+    /* 必须确认空闲且WEL置位，不能只认为06发送成功就允许擦除。 */
+    if (!w25q_read_status1(chip, &status1))
+    {
+        return false;
+    }
+    if ((status1 & 0x03u) != 0x02u)
+    {
+        return false;
+    }
+    cs_pin = (chip == 1u) ? GPIO_Pin_13 : GPIO_Pin_14;
+    GPIO_SetBits(GPIOE, GPIO_Pin_13 | GPIO_Pin_14);
+    GPIO_ResetBits(GPIOE, cs_pin);
+    /* 20后紧跟三字节地址，高字节在前，不携带待写数据。
+     * 整个命令保持CS低，最后拉高CS才提交内部擦除。 */
+    sent = w25q_transfer_byte(0x20u, &ignored) &&
+           w25q_transfer_byte((uint8_t)(address >> 16), &ignored) &&
+           w25q_transfer_byte((uint8_t)(address >> 8), &ignored) &&
+           w25q_transfer_byte((uint8_t)address, &ignored);
+    GPIO_SetBits(GPIOE, GPIO_Pin_13 | GPIO_Pin_14);
+    if (!sent)
+    {
+        /* 即使传输报告超时，芯片也可能已收到完整命令。
+         * 这里只恢复STM32接口，不能宣称Flash操作已取消。 */
+        w25q_init();
+        return false;
+    }
+    return w25q_wait_ready(chip, max_polls);
+}
