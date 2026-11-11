@@ -308,7 +308,7 @@ bool w25q_wait_ready(uint8_t chip, uint32_t max_polls)
         {
             return false;
         }
-        /* 只判断bit0，不把WEL或其他状态位当作忙标志。 */
+        /* 判断busy状态 如果是0则表示Flash空闲 可以返回true */
         if ((status1 & 0x01u) == 0u)
         {
             return true;
@@ -331,21 +331,24 @@ bool w25q_erase_sector(uint8_t chip, uint32_t address, uint32_t max_polls)
     uint8_t status1;
     uint8_t ignored;
     bool sent;
-
+    //如果chip不是1或2，或者address大于0xFFF000，或者address不是4KiB对齐，或者max_polls为0，则返回false
     if ((chip != 1u && chip != 2u) || address > 0xFFF000u ||
         (address & 0xFFFu) != 0u || max_polls == 0u)
     {
         return false;
     }
+    //如果等待Flash空闲失败，或者写使能失败，则返回false
     if (!w25q_wait_ready(chip, max_polls) || !w25q_write_enable(chip))
     {
         return false;
     }
     /* 必须确认空闲且WEL置位，不能只认为06发送成功就允许擦除。 */
+    //如果读取状态寄存器失败，则返回false
     if (!w25q_read_status1(chip, &status1))
     {
         return false;
     }
+    //查询状态寄存器1的结果，只有当WEL位为1且BUSY位为0时，才允许擦除操作
     if ((status1 & 0x03u) != 0x02u)
     {
         return false;
@@ -354,7 +357,8 @@ bool w25q_erase_sector(uint8_t chip, uint32_t address, uint32_t max_polls)
     GPIO_SetBits(GPIOE, GPIO_Pin_13 | GPIO_Pin_14);
     GPIO_ResetBits(GPIOE, cs_pin);
     /* 20后紧跟三字节地址，高字节在前，不携带待写数据。
-     * 整个命令保持CS低，最后拉高CS才提交内部擦除。 */
+     * 整个命令保持CS低，最后拉高CS才提交内部擦除。
+     * 这样从地址开始的4kB区域将被擦除 */
     sent = w25q_transfer_byte(0x20u, &ignored) &&
            w25q_transfer_byte((uint8_t)(address >> 16), &ignored) &&
            w25q_transfer_byte((uint8_t)(address >> 8), &ignored) &&

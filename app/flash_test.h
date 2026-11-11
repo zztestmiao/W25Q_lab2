@@ -26,4 +26,10 @@ void flash_test_wel(void);
  * 禁止把RAM快照当作已完成电脑备份，不修改Flash。 */
 void flash_test_sector_read(void);
 
+/* 主循环轮询手动请求，默认不执行。先确认备份与区域用途，
+ * Watch设置g_sector_erase_request=1后仅擦第一颗最后一个扇区。
+ * 每次上电最多尝试一次，独占SPI，不能在中断调用。
+ * 将覆盖RAM快照为擦除后数据，失败禁止盲目重试。 */
+void flash_test_erase_poll(void);
+
 #endif

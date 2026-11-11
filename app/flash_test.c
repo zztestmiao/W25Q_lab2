@@ -240,3 +240,58 @@ void flash_test_sector_read(void)
     /* 最后发布成功，供调试器确认整个数组及统计已经准备好。 */
     g_sector_read_result = 1u;
 }
+
+/* 默认0不执行。用户确认区域用途及电脑备份后，在Watch写1触发。
+ * 每次上电最多尝试一次，失败不自动重试。仅限第一颗0xFFF000扇区。
+ * result：0未触发、1流程及全FF检查通过、2驱动失败、
+ * 3前置条件不满足、4读回失败、5读回存在非FF、6正在执行。
+ * 当前扇区原本全FF，通过不代表已验证从非FF恢复为FF的能力。 */
+volatile uint32_t g_sector_erase_request;
+volatile uint32_t g_sector_erase_result;
+volatile uint32_t g_sector_after_non_ff;
+
+void flash_test_erase_poll(void)
+{
+    static bool attempted = false;
+    uint32_t i;
+    uint32_t non_ff = 0u;
+
+    if (attempted || g_sector_erase_request != 1u)
+    {
+        return;
+    }
+    /* 在操作前锁定单次尝试并消费请求，防止主循环反复擦除。
+     * 即便失败也保留锁定，重新实验需复位并重新确认。 */
+    attempted = true;
+    g_sector_erase_request = 0u;
+    if (g_w25q1_status != 1u || g_w25q1_id != 0xEF4018u ||
+        g_sector_read_result != 1u)
+    {
+        g_sector_erase_result = 3u;
+        return;
+    }
+    g_sector_erase_result = 6u;
+    /* 此轮只用有限查询次数，非精确毫秒期限。
+     * 驱动失败可能已提交擦除，立即停止，不读数据、不重试。 */
+    if (!w25q_erase_sector(1u, 0xFFF000u, 100000u))
+    {
+        g_sector_erase_result = 2u;
+        return;
+    }
+    /* 复用RAM快照，原始内容已在电脑保存；此后数组代表擦除后内容。 */
+    if (!w25q_read_data(1u, 0xFFF000u,
+                        g_sector_snapshot, sizeof(g_sector_snapshot)))
+    {
+        g_sector_erase_result = 4u;
+        return;
+    }
+    for (i = 0u; i < sizeof(g_sector_snapshot); ++i)
+    {
+        if (g_sector_snapshot[i] != 0xFFu)
+        {
+            ++non_ff;
+        }
+    }
+    g_sector_after_non_ff = non_ff;
+    g_sector_erase_result = (non_ff == 0u) ? 1u : 5u;
+}
