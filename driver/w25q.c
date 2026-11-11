@@ -459,6 +459,8 @@ bool w25q_write_data(uint8_t chip, uint32_t address,
     {
         return false;
     }
+    /* 逐页调用单页编程函数，直到全部数据写完。
+     * 每次计算当前页剩余空间，取它与剩余数据长度的较小值作为本次写入量。 */
     while (length != 0u)
     {
         /* 先算本页剩余空间，再取它与剩余数据长度中的较小值。 */

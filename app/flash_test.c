@@ -393,13 +393,18 @@ void flash_test_cross_poll(void)
     uint32_t i;
     uint32_t mismatch = 0u;
 
+    /* 仅在第一次上电且用户确认后尝试跨页编程，避免反复写入。
+     * 即便失败也保留锁定，重新实验需复位并重新确认。 */
     if (attempted || g_cross_request != 1u)
     {
         return;
     }
     attempted = true;
     g_cross_request = 0u;
-    if (g_w25q1_status != 1u || g_w25q1_id != 0xEF4018u ||
+    /* 先检查前置条件，避免擦除失败或非FF区域被破坏。
+     * 仅在第一颗芯片识别成功、型号正确、扇区读回成功且擦除未失败时才尝试。 */
+    if (g_w25q1_status != 1u || 
+        g_w25q1_id != 0xEF4018u ||
         g_sector_read_result != 1u ||
         (g_sector_erase_result != 0u && g_sector_erase_result != 1u) ||
         g_page_program_result != 0u)
@@ -408,6 +413,7 @@ void flash_test_cross_poll(void)
         return;
     }
     g_cross_result = 9u;
+
     /* 五种参数必在驱动入口拒绝，不产生SPI写命令。
      * expected在此仅传有效地址，非法参数保证不会读取其内容。 */
     if (!w25q_page_program(1u, 0xFFF0FAu, expected, 10u, 100000u))
@@ -425,12 +431,15 @@ void flash_test_cross_poll(void)
         g_cross_result = 3u;
         return;
     }
+    /* 先读回目标区域，确认全FF后才尝试跨页编程。
+     * 读取失败或非全FF都不尝试写入，避免破坏原有数据。 */
     if (!w25q_wait_ready(1u, 100000u) ||
         !w25q_read_data(1u, 0xFFF0FAu, g_cross_readback, sizeof(g_cross_readback)))
     {
         g_cross_result = 4u;
         return;
     }
+    /* 预读后检查全FF，非全FF不尝试编程，避免破坏原有数据。 */
     for (i = 0u; i < sizeof(expected); ++i)
     {
         if (g_cross_readback[i] != 0xFFu)
@@ -440,16 +449,22 @@ void flash_test_cross_poll(void)
         }
         expected[i] = (uint8_t)i;
     }
+    /* 尝试跨页写入300字节，地址0xFFF0FA，数据为00～2B，最大查询次数100000。
+     * 写入失败或读回不一致都不尝试重写，避免破坏原有数据。 */
     if (!w25q_write_data(1u, 0xFFF0FAu, expected, sizeof(expected), 100000u))
     {
         g_cross_result = 6u;
         return;
     }
+    /* 编程后读回300字节，保存到g_cross_readback，如果读取失败则设置g_cross_result为7并返回
+     * 读回不一致时，mismatch统计不一致的字节数，保存到g_cross_mismatch。 */
     if (!w25q_read_data(1u, 0xFFF0FAu, g_cross_readback, sizeof(g_cross_readback)))
     {
         g_cross_result = 7u;
         return;
     }
+    /* 比对读回数据与预期数据，统计不一致的字节数，保存到g_cross_mismatch。
+     * mismatch为0时表示完全一致，结果为1；否则结果为8。 */
     for (i = 0u; i < sizeof(expected); ++i)
     {
         if (g_cross_readback[i] != expected[i])
