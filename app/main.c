@@ -23,6 +23,7 @@ int main(void)
         flash_test_erase_poll();
         flash_test_program_poll();
         flash_test_cross_poll();
+        flash_test_download_poll();
         __NOP();
     }
 }

@@ -43,4 +43,9 @@ void flash_test_program_poll(void);
  * 不要同时触发其他实验，失败保留现场，不自动擦除或重试。 */
 void flash_test_cross_poll(void);
 
+/* 综合模拟下载：默认不执行，request手动1触发后擦除第一颗最后扇区，
+ * 三块追加1000字节并验证全段及尾部；每次上电一次，不与其他实验混用。
+ * 操作会覆盖此前测试数据，不联网、不提交READY。 */
+void flash_test_download_poll(void);
+
 #endif

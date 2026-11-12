@@ -475,3 +475,114 @@ void flash_test_cross_poll(void)
     g_cross_mismatch = mismatch;
     g_cross_result = (mismatch == 0u) ? 1u : 8u;
 }
+
+/* 模拟三次网络接收，手动触发后会擦除第一颗最后一个4KiB扇区。
+ * 测试区原备份在电脑，触发将清除此前跨页数据，无真实联网和READY状态。
+ * result：0未触发/1通过/2前置不满足/3擦除失败/4准备区检查失败/
+ * 5写入失败/6最终读回失败/7数据不一致/8尾部被改动/9执行中。
+ * bytes是已成功完成写入调用的长度，不等于已完成固件校验。
+ * 失败停止不重试，每次上电只允许一次；不得同时触发其他实验。 */
+volatile uint32_t g_download_request;
+volatile uint32_t g_download_result;
+volatile uint32_t g_download_bytes;
+volatile uint32_t g_download_blocks;
+volatile uint32_t g_download_mismatch;
+volatile uint32_t g_download_tail_non_ff;
+
+void flash_test_download_poll(void)
+{
+    static bool attempted = false;
+    static uint8_t expected[1000];
+    const uint32_t sizes[3] = {137u, 509u, 354u};
+    uint32_t i;
+    uint32_t block;
+    uint32_t offset = 0u;
+    uint32_t mismatch = 0u;
+    uint32_t tail_non_ff = 0u;
+
+    if (attempted || g_download_request != 1u)
+    {
+        return;
+    }
+    attempted = true;
+    g_download_request = 0u;
+    /* 本实验要独占此次运行，之前任一手动实验执行或请求时均拒绝。
+     * 重新上电不自动写入，必须重新手动触发。 */
+    if (g_w25q1_status != 1u || g_w25q1_id != 0xEF4018u ||
+        g_sector_read_result != 1u || g_sector_erase_result != 0u ||
+        g_page_program_result != 0u || g_cross_result != 0u ||
+        g_sector_erase_request != 0u || g_page_program_request != 0u ||
+        g_cross_request != 0u)
+    {
+        g_download_result = 2u;
+        return;
+    }
+    g_download_result = 9u;
+    /* 生成包含00、FF、CR、LF的二进制数据，用长度操作而非字符串函数。
+     * 放静态RAM避免1000字节占用栈；每次执行明确填满所有数据。 */
+    for (i = 0u; i < sizeof(expected); ++i)
+    {
+        expected[i] = (uint8_t)i;
+    }
+    /* 整次下载只准备一次扇区，不能每收到一块就重新擦除。 */
+    if (!w25q_erase_sector(1u, 0xFFF000u, 100000u))
+    {
+        g_download_result = 3u;
+        return;
+    }
+    if (!w25q_read_data(1u, 0xFFF000u, g_sector_snapshot, sizeof(g_sector_snapshot)))
+    {
+        g_download_result = 4u;
+        return;
+    }
+    for (i = 0u; i < sizeof(g_sector_snapshot); ++i)
+    {
+        if (g_sector_snapshot[i] != 0xFFu)
+        {
+            g_download_result = 4u;
+            return;
+        }
+    }
+    for (block = 0u; block < 3u; ++block)
+    {
+        /* 写入前再次检查逻辑下载区，不能只依靠16MiB物理边界。
+         * offset既是RAM偏移，也是相对下载起点的Flash偏移。 */
+        if (sizes[block] > sizeof(expected) - offset ||
+            !w25q_write_data(1u, 0xFFF000u + offset,
+                            &expected[offset], sizes[block], 100000u))
+        {
+            g_download_result = 5u;
+            return;
+        }
+        offset += sizes[block];
+        g_download_bytes = offset;
+        g_download_blocks = block + 1u;
+    }
+    if (!w25q_read_data(1u, 0xFFF000u, g_sector_snapshot, sizeof(g_sector_snapshot)))
+    {
+        g_download_result = 6u;
+        return;
+    }
+    for (i = 0u; i < sizeof(expected); ++i)
+    {
+        if (g_sector_snapshot[i] != expected[i])
+        {
+            ++mismatch;
+        }
+    }
+    for (i = sizeof(expected); i < sizeof(g_sector_snapshot); ++i)
+    {
+        if (g_sector_snapshot[i] != 0xFFu)
+        {
+            ++tail_non_ff;
+        }
+    }
+    g_download_mismatch = mismatch;
+    g_download_tail_non_ff = tail_non_ff;
+    if (mismatch != 0u)
+    {
+        g_download_result = 7u;
+        return;
+    }
+    g_download_result = (tail_non_ff == 0u) ? 1u : 8u;
+}
